@@ -924,16 +924,17 @@
 
         const scoresQuery = firebaseApi.query(
           firebaseApi.collection(db, "scores"),
-          firebaseApi.where("difficulty", "==", state.difficulty),
-          firebaseApi.orderBy("score", "desc"),
-          firebaseApi.limit(10)
+          firebaseApi.where("difficulty", "==", state.difficulty)
         );
 
         leaderboardUnsubscribe = firebaseApi.onSnapshot(scoresQuery, (snapshot) => {
-          const rows = snapshot.docs.map((docSnapshot) => ({
-            id: docSnapshot.id,
-            ...docSnapshot.data()
-          }));
+          const rows = snapshot.docs
+            .map((docSnapshot) => ({
+              id: docSnapshot.id,
+              ...docSnapshot.data()
+            }))
+            .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
+            .slice(0, 10);
           renderLeaderboard(rows);
         }, (error) => {
           console.error(error);

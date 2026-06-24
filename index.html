@@ -529,7 +529,7 @@
 
       <section class="leaderboard" aria-label="ランキング">
         <div class="board-head">
-          <span class="board-title">ランキング</span>
+          <span class="board-title" id="leaderboardTitle">EASY ランキング</span>
           <span class="label">TOP 10</span>
         </div>
         <ol class="leaderboard-list" id="leaderboardList"></ol>
@@ -575,6 +575,7 @@
       const authHint = document.getElementById("authHint");
       const profileControls = document.getElementById("profileControls");
       const displayNameInput = document.getElementById("displayNameInput");
+      const leaderboardTitle = document.getElementById("leaderboardTitle");
       const leaderboardList = document.getElementById("leaderboardList");
       const leaderboardStatus = document.getElementById("leaderboardStatus");
       const leftPad = document.getElementById("leftPad");
@@ -680,8 +681,18 @@
         return normalized.slice(0, 24) || "Player";
       }
 
+      function getSignedInUser() {
+        if (currentUser) return currentUser;
+        if (auth && auth.currentUser) {
+          currentUser = auth.currentUser;
+          return currentUser;
+        }
+        return null;
+      }
+
       function canPlay() {
-        return firebaseAvailable && authReady && !!currentUser && !!startRunCallable && !!submitRunCallable;
+        const user = getSignedInUser();
+        return firebaseAvailable && (authReady || !!user) && !!user && !!startRunCallable && !!submitRunCallable;
       }
 
       function setAuthMessage(message) {
@@ -714,21 +725,46 @@
           "functions/resource-exhausted": "入力ログが大きすぎるか、送信回数が多すぎます。",
           "functions/not-found": "ゲーム開始記録が見つかりませんでした。",
           "functions/already-exists": "このプレイはすでに登録済みです。",
-          "functions/deadline-exceeded": "サーバー検証が時間切れになりました。"
+          "functions/deadline-exceeded": "サーバー検証が時間切れになりました。",
+          "functions/internal": "サーバー側で内部エラーが発生しました。",
+          "functions/unavailable": "Cloud Functionsに接続できませんでした。少し待ってから再試行してください。",
+          "functions/permission-denied": "このユーザーではこのプレイを開始できません。"
         };
         return `${messages[code] || "スコア登録に失敗しました。Cloud Functions設定を確認してください。"} (${code})`;
       }
 
       function requireLogin() {
+        const user = getSignedInUser();
         if (!isFirebaseConfigured()) {
           setAuthMessage("Firebase設定を入れるとログインできます。");
         } else if (!firebaseAvailable) {
           setAuthMessage(firebaseLoadError || "Firebaseを読み込み中です。");
         } else if (!startRunCallable || !submitRunCallable) {
           setAuthMessage("Cloud Functionsを読み込み中です。");
-        } else if (!currentUser) {
+        } else if (!authReady && !user) {
+          setAuthMessage("ログイン状態を確認中です。数秒待ってからもう一度開始してください。");
+        } else if (!user) {
           setAuthMessage("Googleログイン後にゲームを開始できます。");
         }
+        updateUi();
+      }
+
+      function applyAuthUser(user) {
+        currentUser = user || null;
+        authReady = true;
+        if (currentUser) {
+          displayName = cleanDisplayName(currentUser.displayName || displayName || "Player");
+          displayNameInput.value = displayName;
+          updateAccountUi();
+          updateUi();
+          savePlayerProfile();
+          return;
+        } else {
+          displayName = "";
+          displayNameInput.value = "";
+          if (state.mode === "playing" || state.mode === "paused") resetGame();
+        }
+        updateAccountUi();
         updateUi();
       }
 
@@ -764,26 +800,28 @@
           loginButton.disabled = false;
           subscribeLeaderboard();
 
-          firebaseApi.getRedirectResult(auth).catch((error) => {
+          firebaseApi.getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+              applyAuthUser(result.user);
+            }
+          }).catch((error) => {
             console.error(error);
             setAuthMessage(getAuthErrorMessage(error));
           });
 
-          firebaseApi.onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            authReady = true;
+          firebaseApi.onAuthStateChanged(auth, applyAuthUser);
+
+          window.setTimeout(() => {
+            if (authReady) return;
+            const user = getSignedInUser();
             if (user) {
-              displayName = cleanDisplayName(user.displayName || displayName || "Player");
-              displayNameInput.value = displayName;
-              await savePlayerProfile();
-            } else {
-              displayName = "";
-              displayNameInput.value = "";
-              if (state.mode === "playing" || state.mode === "paused") resetGame();
+              applyAuthUser(user);
+              return;
             }
+            authReady = true;
             updateAccountUi();
             updateUi();
-          });
+          }, 3000);
         } catch (error) {
           firebaseAvailable = false;
           authReady = true;
@@ -850,16 +888,17 @@
       }
 
       async function savePlayerProfile() {
-        if (!currentUser || !db || !firebaseApi) return;
+        const user = getSignedInUser();
+        if (!user || !db || !firebaseApi) return;
 
-        displayName = cleanDisplayName(displayNameInput.value || displayName || currentUser.displayName);
+        displayName = cleanDisplayName(displayNameInput.value || displayName || user.displayName);
         displayNameInput.value = displayName;
 
         try {
-          await firebaseApi.setDoc(firebaseApi.doc(db, "players", currentUser.uid), {
-            uid: currentUser.uid,
+          await firebaseApi.setDoc(firebaseApi.doc(db, "players", user.uid), {
+            uid: user.uid,
             name: displayName,
-            photoURL: currentUser.photoURL || "",
+            photoURL: user.photoURL || "",
             updatedAt: firebaseApi.serverTimestamp()
           }, { merge: true });
         } catch (error) {
@@ -869,15 +908,16 @@
       }
 
       function updateAccountUi() {
-        const signedIn = !!currentUser;
+        const user = getSignedInUser();
+        const signedIn = !!user;
         loginButton.hidden = signedIn;
         logoutButton.hidden = !signedIn;
         profileControls.hidden = !signedIn;
 
         if (signedIn) {
-          accountNameEl.textContent = displayName || currentUser.displayName || "Player";
-          accountAvatar.hidden = !currentUser.photoURL;
-          if (currentUser.photoURL) accountAvatar.src = currentUser.photoURL;
+          accountNameEl.textContent = displayName || user.displayName || "Player";
+          accountAvatar.hidden = !user.photoURL;
+          if (user.photoURL) accountAvatar.src = user.photoURL;
           setAuthMessage("スコアはゲーム終了時に自動登録されます。");
         } else {
           accountNameEl.textContent = "ログイン待ち";
@@ -893,8 +933,12 @@
         if (!db || !firebaseApi) return;
         if (leaderboardUnsubscribe) leaderboardUnsubscribe();
 
+        leaderboardTitle.textContent = `${DIFFICULTY[state.difficulty].label} ランキング`;
+        leaderboardStatus.textContent = `${DIFFICULTY[state.difficulty].label} の記録を読み込み中です。`;
+
         const scoresQuery = firebaseApi.query(
           firebaseApi.collection(db, "scores"),
+          firebaseApi.where("difficulty", "==", state.difficulty),
           firebaseApi.orderBy("score", "desc"),
           firebaseApi.limit(10)
         );
@@ -907,7 +951,7 @@
           renderLeaderboard(rows);
         }, (error) => {
           console.error(error);
-          leaderboardStatus.textContent = "ランキングを読み込めませんでした。";
+          leaderboardStatus.textContent = `${DIFFICULTY[state.difficulty].label} ランキングを読み込めませんでした。`;
         });
       }
 
@@ -915,11 +959,11 @@
         leaderboardList.textContent = "";
 
         if (!rows.length) {
-          leaderboardStatus.textContent = isFirebaseConfigured() ? "まだ記録がありません。" : "Firebase設定後に表示されます。";
+          leaderboardStatus.textContent = isFirebaseConfigured() ? `${DIFFICULTY[state.difficulty].label} はまだ記録がありません。` : "Firebase設定後に表示されます。";
           return;
         }
 
-        leaderboardStatus.textContent = "ゲーム終了時に自動更新されます。";
+        leaderboardStatus.textContent = `${DIFFICULTY[state.difficulty].label} のランキングです。`;
         rows.forEach((row, index) => {
           const item = document.createElement("li");
           item.className = "board-row";
@@ -935,12 +979,14 @@
       }
 
       async function submitScore() {
-        if (state.scoreSubmitted || !currentUser || !submitRunCallable || !state.runId) return;
+        const user = getSignedInUser();
+        if (state.scoreSubmitted || !user || !submitRunCallable || !state.runId) return;
         state.scoreSubmitted = true;
 
-        const name = cleanDisplayName(displayNameInput.value || displayName || currentUser.displayName);
+        const name = cleanDisplayName(displayNameInput.value || displayName || user.displayName);
 
         try {
+          if (typeof user.getIdToken === "function") await user.getIdToken();
           await savePlayerProfile();
           const result = await submitRunCallable({
             runId: state.runId,
@@ -993,7 +1039,8 @@
       }
 
       async function prepareServerRun() {
-        if (!startRunCallable || !currentUser) return false;
+        const user = getSignedInUser();
+        if (!startRunCallable || !user) return false;
         if (state.starting) return false;
 
         state.starting = true;
@@ -1002,6 +1049,7 @@
         updateUi();
 
         try {
+          if (typeof user.getIdToken === "function") await user.getIdToken();
           const response = await startRunCallable({ difficulty: state.difficulty });
           const data = response.data || {};
           if (!data.runId || !Number.isFinite(data.seed)) {
@@ -1120,6 +1168,7 @@
           button.classList.toggle("active", button.dataset.mode === mode);
         });
         resetGame();
+        subscribeLeaderboard();
       }
 
       function formatScore(value) {

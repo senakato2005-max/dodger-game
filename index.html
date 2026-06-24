@@ -55,10 +55,13 @@
     }
 
     .stage {
+      width: 100%;
       min-width: 0;
       min-height: 0;
       display: grid;
-      place-items: center;
+      align-content: center;
+      justify-items: center;
+      gap: 0.75rem;
       position: relative;
     }
 
@@ -127,6 +130,8 @@
       display: none;
       grid-template-columns: 1fr 1fr;
       gap: 0.75rem;
+      width: min(100%, 28rem);
+      max-width: calc(100vw - 1.5rem);
     }
 
     .side {
@@ -164,6 +169,115 @@
       border-radius: 8px;
       background: var(--panel-2);
       padding: 0.7rem;
+    }
+
+    .account,
+    .leaderboard {
+      border: 1px solid rgba(247, 243, 232, 0.12);
+      border-radius: 8px;
+      background: var(--panel-2);
+      padding: 0.75rem;
+    }
+
+    .account {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .account-line,
+    .board-head,
+    .board-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.6rem;
+    }
+
+    .avatar {
+      width: 2rem;
+      height: 2rem;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      border: 1px solid rgba(247, 243, 232, 0.18);
+      background: #101213;
+      object-fit: cover;
+    }
+
+    .account-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .name-input {
+      width: 100%;
+      min-height: 2.55rem;
+      border: 1px solid rgba(247, 243, 232, 0.14);
+      border-radius: 8px;
+      background: #101213;
+      color: var(--ink);
+      font: inherit;
+      padding: 0 0.7rem;
+    }
+
+    .name-input:focus {
+      border-color: rgba(66, 214, 164, 0.7);
+      outline: none;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .leaderboard {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .board-title {
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .board-status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .leaderboard-list {
+      display: grid;
+      gap: 0.42rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .board-row {
+      min-height: 2.2rem;
+      border-radius: 7px;
+      background: rgba(13, 17, 20, 0.54);
+      padding: 0.46rem 0.55rem;
+    }
+
+    .rank-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rank-score {
+      flex: 0 0 auto;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--amber);
     }
 
     .controls {
@@ -204,6 +318,13 @@
     .btn.primary {
       background: #164436;
       border-color: rgba(66, 214, 164, 0.42);
+    }
+
+    .btn:disabled,
+    .mode:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      transform: none;
     }
 
     .btn.danger {
@@ -287,7 +408,8 @@
 
       .game-shell {
         width: min(100%, 28rem);
-        max-height: calc(100vh - 14rem);
+        max-width: calc(100vw - 1.5rem);
+        max-height: calc(100svh - 18rem);
       }
 
       .side {
@@ -347,22 +469,39 @@
               <span class="label">BEST</span>
               <span class="value" id="best">0000</span>
             </div>
-            <div class="badge">
-              <span class="label">LIFE</span>
-              <span class="value" id="lives">3</span>
-            </div>
-          </div>
-          <div class="mobile-controls">
-            <button class="pad" id="leftPad" type="button" aria-label="左へ移動">←</button>
-            <button class="pad" id="rightPad" type="button" aria-label="右へ移動">→</button>
+          <div class="badge">
+            <span class="label">LIFE</span>
+            <span class="value" id="lives">3</span>
           </div>
         </div>
+        </div>
+      </div>
+      <div class="mobile-controls">
+        <button class="pad" id="leftPad" type="button" aria-label="左へ移動">←</button>
+        <button class="pad" id="rightPad" type="button" aria-label="右へ移動">→</button>
       </div>
     </section>
 
     <aside class="side">
       <h1 class="title">よけるゲーム</h1>
       <p class="status" id="status">READY</p>
+
+      <section class="account" aria-label="アカウント">
+        <div class="account-line">
+          <div>
+            <span class="label">ACCOUNT</span>
+            <div class="account-name" id="accountName">ログイン待ち</div>
+          </div>
+          <img class="avatar" id="accountAvatar" alt="" hidden>
+        </div>
+        <button class="btn primary" id="loginButton" type="button">Googleでログイン</button>
+        <div id="profileControls" hidden>
+          <span class="label">ランキング表示名</span>
+          <input class="name-input" id="displayNameInput" type="text" maxlength="24" autocomplete="nickname">
+        </div>
+        <button class="btn" id="logoutButton" type="button" hidden>ログアウト</button>
+        <p class="hint" id="authHint">ログインするとゲームを開始できます。</p>
+      </section>
 
       <div class="stat-grid" aria-label="ゲーム情報">
         <div class="stat">
@@ -388,6 +527,15 @@
         </div>
       </div>
 
+      <section class="leaderboard" aria-label="ランキング">
+        <div class="board-head">
+          <span class="board-title">ランキング</span>
+          <span class="label">TOP 10</span>
+        </div>
+        <ol class="leaderboard-list" id="leaderboardList"></ol>
+        <p class="board-status" id="leaderboardStatus">Firebase設定後に表示されます。</p>
+      </section>
+
       <div class="legend" aria-hidden="true">
         <div class="chip"><span class="dot"></span><span>プレイヤー</span></div>
         <div class="chip"><span class="dot amber"></span><span>ボーナス</span></div>
@@ -398,6 +546,17 @@
 
   <script>
     (() => {
+      const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyAdciOa04DQbOBowHhZFokDImEN897lcao",
+        authDomain: "dodger-game-dbe6c.firebaseapp.com",
+        projectId: "dodger-game-dbe6c",
+        storageBucket: "dodger-game-dbe6c.firebasestorage.app",
+        messagingSenderId: "142010147299",
+        appId: "1:142010147299:web:50f3ebe08f525b911c40d6",
+        measurementId: "G-L7VRMQGLN6"
+      };
+      const FIREBASE_SDK_VERSION = "10.12.5";
+
       const canvas = document.getElementById("game");
       const ctx = canvas.getContext("2d");
       const scoreEl = document.getElementById("score");
@@ -409,6 +568,15 @@
       const playButton = document.getElementById("playButton");
       const resetButton = document.getElementById("resetButton");
       const muteButton = document.getElementById("muteButton");
+      const loginButton = document.getElementById("loginButton");
+      const logoutButton = document.getElementById("logoutButton");
+      const accountNameEl = document.getElementById("accountName");
+      const accountAvatar = document.getElementById("accountAvatar");
+      const authHint = document.getElementById("authHint");
+      const profileControls = document.getElementById("profileControls");
+      const displayNameInput = document.getElementById("displayNameInput");
+      const leaderboardList = document.getElementById("leaderboardList");
+      const leaderboardStatus = document.getElementById("leaderboardStatus");
       const leftPad = document.getElementById("leftPad");
       const rightPad = document.getElementById("rightPad");
       const modeButtons = [...document.querySelectorAll(".mode")];
@@ -416,6 +584,9 @@
       const WIDTH = 480;
       const HEIGHT = 640;
       const PLAYER_Y = 556;
+      const FIXED_DT = 1 / 60;
+      const MAX_FRAME_STEPS = 5;
+      const MAX_INPUT_EVENTS = 12000;
       const DIFFICULTY = {
         easy: { label: "EASY", spawn: 0.92, speed: 1, lives: 3, score: 1 },
         normal: { label: "NORMAL", spawn: 0.72, speed: 1.16, lives: 3, score: 1.22 },
@@ -425,6 +596,7 @@
       const keys = { left: false, right: false };
       const pointer = { active: false, x: WIDTH / 2 };
       let lastTime = 0;
+      let frameAccumulator = 0;
       let audioCtx = null;
       let muted = false;
 
@@ -434,6 +606,21 @@
         r: 0.6 + ((i * 17) % 18) / 18,
         tone: i % 3
       }));
+
+      let firebaseApp = null;
+      let auth = null;
+      let db = null;
+      let googleProvider = null;
+      let firebaseApi = null;
+      let functionsService = null;
+      let startRunCallable = null;
+      let submitRunCallable = null;
+      let currentUser = null;
+      let leaderboardUnsubscribe = null;
+      let authReady = false;
+      let firebaseAvailable = false;
+      let firebaseLoadError = "";
+      let displayName = "";
 
       const state = {
         mode: "ready",
@@ -445,6 +632,14 @@
         speedFactor: 1,
         spawnTimer: 0.7,
         bonusTimer: 3.4,
+        tick: 0,
+        runId: "",
+        seed: 0,
+        rng: null,
+        inputLog: [],
+        lastInputSnapshot: null,
+        starting: false,
+        scoreSubmitted: false,
         obstacles: [],
         bonuses: [],
         particles: [],
@@ -474,6 +669,365 @@
         }
       }
 
+      function isFirebaseConfigured() {
+        return Object.values(FIREBASE_CONFIG).every((value) => {
+          return value && !String(value).startsWith("PASTE_");
+        });
+      }
+
+      function cleanDisplayName(value) {
+        const normalized = String(value || "").replace(/\s+/g, " ").trim();
+        return normalized.slice(0, 24) || "Player";
+      }
+
+      function canPlay() {
+        return firebaseAvailable && authReady && !!currentUser && !!startRunCallable && !!submitRunCallable;
+      }
+
+      function setAuthMessage(message) {
+        authHint.textContent = message;
+      }
+
+      function isMobileLike() {
+        return window.matchMedia("(max-width: 850px)").matches || navigator.maxTouchPoints > 0;
+      }
+
+      function getAuthErrorMessage(error) {
+        const code = error && error.code ? error.code : "unknown";
+        const messages = {
+          "auth/operation-not-allowed": "Firebase AuthenticationでGoogleログインが有効になっていません。",
+          "auth/unauthorized-domain": "このドメインがFirebaseの承認済みドメインに入っていません。",
+          "auth/popup-blocked": "ポップアップがブロックされました。リダイレクトログインを試します。",
+          "auth/popup-closed-by-user": "ログイン画面が閉じられました。もう一度ログインしてください。",
+          "auth/cancelled-popup-request": "ログイン処理が重複しました。少し待ってからもう一度試してください。",
+          "auth/network-request-failed": "ネットワーク接続に失敗しました。通信状態を確認してください。"
+        };
+        return `${messages[code] || "ログインできませんでした。Firebase設定を確認してください。"} (${code})`;
+      }
+
+      function getFunctionErrorMessage(error) {
+        const code = error && error.code ? error.code : "unknown";
+        const messages = {
+          "functions/unauthenticated": "ログイン状態を確認できないため、スコア登録を拒否しました。",
+          "functions/failed-precondition": "サーバー検証でプレイ内容が一致しませんでした。",
+          "functions/invalid-argument": "スコア送信データが不正です。",
+          "functions/resource-exhausted": "入力ログが大きすぎるか、送信回数が多すぎます。",
+          "functions/not-found": "ゲーム開始記録が見つかりませんでした。",
+          "functions/already-exists": "このプレイはすでに登録済みです。",
+          "functions/deadline-exceeded": "サーバー検証が時間切れになりました。"
+        };
+        return `${messages[code] || "スコア登録に失敗しました。Cloud Functions設定を確認してください。"} (${code})`;
+      }
+
+      function requireLogin() {
+        if (!isFirebaseConfigured()) {
+          setAuthMessage("Firebase設定を入れるとログインできます。");
+        } else if (!firebaseAvailable) {
+          setAuthMessage(firebaseLoadError || "Firebaseを読み込み中です。");
+        } else if (!startRunCallable || !submitRunCallable) {
+          setAuthMessage("Cloud Functionsを読み込み中です。");
+        } else if (!currentUser) {
+          setAuthMessage("Googleログイン後にゲームを開始できます。");
+        }
+        updateUi();
+      }
+
+      async function initFirebase() {
+        if (!isFirebaseConfigured()) {
+          authReady = true;
+          firebaseLoadError = "Firebase設定待ち";
+          loginButton.disabled = true;
+          setAuthMessage("Firebase設定を入れてからGitHub Pagesへ反映してください。");
+          renderLeaderboard([]);
+          updateUi();
+          return;
+        }
+
+        try {
+          const base = `https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}`;
+          const [appModule, authModule, firestoreModule, functionsModule] = await Promise.all([
+            import(`${base}/firebase-app.js`),
+            import(`${base}/firebase-auth.js`),
+            import(`${base}/firebase-firestore.js`),
+            import(`${base}/firebase-functions.js`)
+          ]);
+
+          firebaseApi = { ...appModule, ...authModule, ...firestoreModule, ...functionsModule };
+          firebaseApp = firebaseApi.initializeApp(FIREBASE_CONFIG);
+          auth = firebaseApi.getAuth(firebaseApp);
+          db = firebaseApi.getFirestore(firebaseApp);
+          functionsService = firebaseApi.getFunctions(firebaseApp, "asia-northeast1");
+          startRunCallable = firebaseApi.httpsCallable(functionsService, "startRun");
+          submitRunCallable = firebaseApi.httpsCallable(functionsService, "submitRun");
+          googleProvider = new firebaseApi.GoogleAuthProvider();
+          firebaseAvailable = true;
+          loginButton.disabled = false;
+          subscribeLeaderboard();
+
+          firebaseApi.getRedirectResult(auth).catch((error) => {
+            console.error(error);
+            setAuthMessage(getAuthErrorMessage(error));
+          });
+
+          firebaseApi.onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            authReady = true;
+            if (user) {
+              displayName = cleanDisplayName(user.displayName || displayName || "Player");
+              displayNameInput.value = displayName;
+              await savePlayerProfile();
+            } else {
+              displayName = "";
+              displayNameInput.value = "";
+              if (state.mode === "playing" || state.mode === "paused") resetGame();
+            }
+            updateAccountUi();
+            updateUi();
+          });
+        } catch (error) {
+          firebaseAvailable = false;
+          authReady = true;
+          firebaseLoadError = "Firebaseの読み込みに失敗しました。設定とネットワークを確認してください。";
+          console.error(error);
+          loginButton.disabled = true;
+          setAuthMessage(firebaseLoadError);
+          renderLeaderboard([]);
+          updateUi();
+        }
+      }
+
+      async function signInWithGoogle() {
+        if (!firebaseAvailable || !auth || !googleProvider) {
+          requireLogin();
+          return;
+        }
+
+        let redirectStarted = false;
+        try {
+          loginButton.disabled = true;
+
+          if (isMobileLike()) {
+            redirectStarted = true;
+            setAuthMessage("Googleログインページへ移動します。");
+            await firebaseApi.signInWithRedirect(auth, googleProvider);
+            return;
+          }
+
+          setAuthMessage("Googleログインを開いています。");
+          await firebaseApi.signInWithPopup(auth, googleProvider);
+        } catch (error) {
+          console.error(error);
+          if (error.code === "auth/popup-blocked") {
+            try {
+              redirectStarted = true;
+              setAuthMessage("ポップアップが使えないため、Googleログインページへ移動します。");
+              await firebaseApi.signInWithRedirect(auth, googleProvider);
+              return;
+            } catch (redirectError) {
+              console.error(redirectError);
+              setAuthMessage(getAuthErrorMessage(redirectError));
+            }
+          } else {
+            setAuthMessage(getAuthErrorMessage(error));
+          }
+        } finally {
+          if (!redirectStarted) {
+            loginButton.disabled = false;
+            updateUi();
+          }
+        }
+      }
+
+      async function signOutCurrentUser() {
+        if (!auth) return;
+        try {
+          await firebaseApi.signOut(auth);
+          resetGame();
+        } catch (error) {
+          console.error(error);
+          setAuthMessage("ログアウトできませんでした。");
+        }
+      }
+
+      async function savePlayerProfile() {
+        if (!currentUser || !db || !firebaseApi) return;
+
+        displayName = cleanDisplayName(displayNameInput.value || displayName || currentUser.displayName);
+        displayNameInput.value = displayName;
+
+        try {
+          await firebaseApi.setDoc(firebaseApi.doc(db, "players", currentUser.uid), {
+            uid: currentUser.uid,
+            name: displayName,
+            photoURL: currentUser.photoURL || "",
+            updatedAt: firebaseApi.serverTimestamp()
+          }, { merge: true });
+        } catch (error) {
+          console.error(error);
+          setAuthMessage("表示名の保存に失敗しました。");
+        }
+      }
+
+      function updateAccountUi() {
+        const signedIn = !!currentUser;
+        loginButton.hidden = signedIn;
+        logoutButton.hidden = !signedIn;
+        profileControls.hidden = !signedIn;
+
+        if (signedIn) {
+          accountNameEl.textContent = displayName || currentUser.displayName || "Player";
+          accountAvatar.hidden = !currentUser.photoURL;
+          if (currentUser.photoURL) accountAvatar.src = currentUser.photoURL;
+          setAuthMessage("スコアはゲーム終了時に自動登録されます。");
+        } else {
+          accountNameEl.textContent = "ログイン待ち";
+          accountAvatar.hidden = true;
+          accountAvatar.removeAttribute("src");
+          if (isFirebaseConfigured()) {
+            setAuthMessage(firebaseAvailable ? "Googleログイン後にゲームを開始できます。" : (firebaseLoadError || "Firebaseを読み込み中です。"));
+          }
+        }
+      }
+
+      function subscribeLeaderboard() {
+        if (!db || !firebaseApi) return;
+        if (leaderboardUnsubscribe) leaderboardUnsubscribe();
+
+        const scoresQuery = firebaseApi.query(
+          firebaseApi.collection(db, "scores"),
+          firebaseApi.orderBy("score", "desc"),
+          firebaseApi.limit(10)
+        );
+
+        leaderboardUnsubscribe = firebaseApi.onSnapshot(scoresQuery, (snapshot) => {
+          const rows = snapshot.docs.map((docSnapshot) => ({
+            id: docSnapshot.id,
+            ...docSnapshot.data()
+          }));
+          renderLeaderboard(rows);
+        }, (error) => {
+          console.error(error);
+          leaderboardStatus.textContent = "ランキングを読み込めませんでした。";
+        });
+      }
+
+      function renderLeaderboard(rows) {
+        leaderboardList.textContent = "";
+
+        if (!rows.length) {
+          leaderboardStatus.textContent = isFirebaseConfigured() ? "まだ記録がありません。" : "Firebase設定後に表示されます。";
+          return;
+        }
+
+        leaderboardStatus.textContent = "ゲーム終了時に自動更新されます。";
+        rows.forEach((row, index) => {
+          const item = document.createElement("li");
+          item.className = "board-row";
+          const name = document.createElement("span");
+          name.className = "rank-name";
+          name.textContent = `${index + 1}. ${cleanDisplayName(row.name)}`;
+          const score = document.createElement("span");
+          score.className = "rank-score";
+          score.textContent = formatScore(row.score || 0);
+          item.append(name, score);
+          leaderboardList.append(item);
+        });
+      }
+
+      async function submitScore() {
+        if (state.scoreSubmitted || !currentUser || !submitRunCallable || !state.runId) return;
+        state.scoreSubmitted = true;
+
+        const name = cleanDisplayName(displayNameInput.value || displayName || currentUser.displayName);
+
+        try {
+          await savePlayerProfile();
+          const result = await submitRunCallable({
+            runId: state.runId,
+            displayName: name,
+            ticks: state.tick,
+            inputLog: state.inputLog
+          });
+          const verifiedScore = result.data && Number.isFinite(result.data.score) ? result.data.score : Math.floor(state.score);
+          setAuthMessage(`検証済みスコア ${formatScore(verifiedScore)} を登録しました。`);
+        } catch (error) {
+          state.scoreSubmitted = false;
+          console.error(error);
+          setAuthMessage(getFunctionErrorMessage(error));
+        }
+      }
+
+      function inputSnapshot() {
+        return {
+          tick: state.tick,
+          left: !!keys.left,
+          right: !!keys.right,
+          pointerActive: !!pointer.active,
+          pointerX: Math.round(Math.max(0, Math.min(WIDTH, pointer.x)) * 10) / 10
+        };
+      }
+
+      function sameInput(a, b) {
+        return a && b
+          && a.left === b.left
+          && a.right === b.right
+          && a.pointerActive === b.pointerActive
+          && Math.abs(a.pointerX - b.pointerX) < 0.1;
+      }
+
+      function recordInputState(force = false) {
+        if (!state.runId || (!force && state.mode === "over")) return;
+        const snapshot = inputSnapshot();
+        if (!force && sameInput(state.lastInputSnapshot, snapshot)) return;
+        if (state.inputLog.length >= MAX_INPUT_EVENTS) {
+          if (!state.scoreSubmitted) {
+            state.scoreSubmitted = true;
+            endGame();
+            setAuthMessage("入力ログが大きすぎるため、ランキング登録を停止しました。");
+          }
+          return;
+        }
+
+        state.inputLog.push(snapshot);
+        state.lastInputSnapshot = snapshot;
+      }
+
+      async function prepareServerRun() {
+        if (!startRunCallable || !currentUser) return false;
+        if (state.starting) return false;
+
+        state.starting = true;
+        playButton.disabled = true;
+        setAuthMessage("サーバーでゲームを準備しています。");
+        updateUi();
+
+        try {
+          const response = await startRunCallable({ difficulty: state.difficulty });
+          const data = response.data || {};
+          if (!data.runId || !Number.isFinite(data.seed)) {
+            throw new Error("startRun returned invalid data");
+          }
+
+          state.runId = String(data.runId);
+          state.seed = data.seed >>> 0;
+          state.rng = createRng(state.seed);
+          state.tick = 0;
+          state.inputLog = [];
+          state.lastInputSnapshot = null;
+          state.scoreSubmitted = false;
+          recordInputState(true);
+          setAuthMessage("サーバー検証付きのプレイを開始しました。");
+          return true;
+        } catch (error) {
+          console.error(error);
+          setAuthMessage(getFunctionErrorMessage(error));
+          return false;
+        } finally {
+          state.starting = false;
+          updateUi();
+        }
+      }
+
       function resizeCanvas() {
         const rect = canvas.getBoundingClientRect();
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -490,6 +1044,14 @@
         state.speedFactor = settings.speed;
         state.spawnTimer = 0.65;
         state.bonusTimer = 3.2;
+        state.tick = 0;
+        state.runId = "";
+        state.seed = 0;
+        state.rng = null;
+        state.inputLog = [];
+        state.lastInputSnapshot = null;
+        state.starting = false;
+        state.scoreSubmitted = false;
         state.obstacles = [];
         state.bonuses = [];
         state.particles = [];
@@ -501,13 +1063,32 @@
         updateUi();
       }
 
-      function startGame() {
-        if (state.mode === "over") {
-          resetGame(false);
-          state.mode = "playing";
+      async function startGame() {
+        if (!canPlay()) {
+          requireLogin();
+          return;
         }
-        if (state.mode === "ready") state.mode = "playing";
-        if (state.mode === "paused") state.mode = "playing";
+
+        if (state.starting) return;
+
+        if (state.mode === "paused") {
+          state.mode = "playing";
+          if (!lastTime) lastTime = performance.now();
+          updateUi();
+          return;
+        }
+
+        if (state.mode === "over" || state.mode === "ready") {
+          resetGame(false);
+          const ready = await prepareServerRun();
+          if (!ready) {
+            state.mode = "ready";
+            updateUi();
+            return;
+          }
+          state.mode = "playing";
+          frameAccumulator = 0;
+        }
         if (!lastTime) lastTime = performance.now();
         updateUi();
       }
@@ -529,6 +1110,7 @@
         }
         burst(state.player.x, state.player.y, "#e85d75", 26);
         tone(110, 0.12, "sawtooth", 0.035);
+        submitScore();
         updateUi();
       }
 
@@ -544,6 +1126,17 @@
         return String(Math.max(0, Math.floor(value))).padStart(4, "0");
       }
 
+      function createRng(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6D2B79F5;
+          let t = value;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
       function updateUi() {
         scoreEl.textContent = formatScore(state.score);
         bestEl.textContent = formatScore(state.best);
@@ -551,7 +1144,23 @@
         timeEl.textContent = state.elapsed.toFixed(1).padStart(4, "0");
         speedEl.textContent = state.speedFactor.toFixed(1) + "x";
 
-        if (state.mode === "playing") {
+        const configured = isFirebaseConfigured();
+        const readyToPlay = canPlay();
+        playButton.disabled = state.starting || (!readyToPlay && state.mode !== "playing" && state.mode !== "paused");
+        modeButtons.forEach((button) => {
+          button.disabled = state.starting || state.mode === "playing";
+        });
+
+        if (state.starting) {
+          statusEl.textContent = "STARTING";
+          playButton.textContent = "準備中";
+        } else if (!configured) {
+          statusEl.textContent = "SETUP REQUIRED";
+          playButton.textContent = "Firebase設定待ち";
+        } else if (!readyToPlay && state.mode !== "playing" && state.mode !== "paused") {
+          statusEl.textContent = "LOGIN REQUIRED";
+          playButton.textContent = "Googleログインが必要";
+        } else if (state.mode === "playing") {
           statusEl.textContent = "PLAYING";
           playButton.textContent = "⏸ 休止";
         } else if (state.mode === "paused") {
@@ -569,11 +1178,16 @@
       }
 
       function random(min, max) {
+        const source = state.rng || Math.random;
+        return min + source() * (max - min);
+      }
+
+      function visualRandom(min, max) {
         return min + Math.random() * (max - min);
       }
 
       function spawnObstacle() {
-        const kindRoll = Math.random();
+        const kindRoll = state.rng ? state.rng() : Math.random();
         const kind = kindRoll > 0.72 ? "bar" : kindRoll > 0.36 ? "orb" : "block";
         const size = kind === "bar" ? random(78, 126) : random(28, 48);
         const x = random(34 + size / 2, WIDTH - 34 - size / 2);
@@ -633,6 +1247,7 @@
         if (state.mode !== "playing") return;
 
         const settings = DIFFICULTY[state.difficulty];
+        state.tick += 1;
         state.elapsed += dt;
         state.speedFactor = settings.speed + Math.min(1.85, state.elapsed / 30);
         state.score += dt * 14 * settings.score;
@@ -718,16 +1333,16 @@
 
       function burst(x, y, color, count) {
         for (let i = 0; i < count; i++) {
-          const angle = random(0, Math.PI * 2);
-          const speed = random(35, 185);
+          const angle = visualRandom(0, Math.PI * 2);
+          const speed = visualRandom(35, 185);
           state.particles.push({
             x,
             y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            size: random(2, 5),
+            size: visualRandom(2, 5),
             color,
-            life: random(0.32, 0.72)
+            life: visualRandom(0.32, 0.72)
           });
         }
       }
@@ -754,8 +1369,8 @@
       function draw() {
         ctx.save();
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
-        const shakeX = state.shake ? random(-state.shake, state.shake) : 0;
-        const shakeY = state.shake ? random(-state.shake, state.shake) : 0;
+        const shakeX = state.shake ? visualRandom(-state.shake, state.shake) : 0;
+        const shakeY = state.shake ? visualRandom(-state.shake, state.shake) : 0;
         ctx.translate(shakeX, shakeY);
 
         drawBackground();
@@ -933,9 +1548,18 @@
       }
 
       function loop(now) {
-        const dt = Math.min(0.033, (now - lastTime) / 1000 || 0);
+        const dt = Math.min(0.1, (now - lastTime) / 1000 || 0);
         lastTime = now;
-        update(dt);
+        if (state.mode === "playing") {
+          frameAccumulator += dt;
+          let steps = 0;
+          while (state.mode === "playing" && frameAccumulator >= FIXED_DT && steps < MAX_FRAME_STEPS) {
+            update(FIXED_DT);
+            frameAccumulator -= FIXED_DT;
+            steps += 1;
+          }
+          if (steps === MAX_FRAME_STEPS) frameAccumulator = 0;
+        }
         draw();
         requestAnimationFrame(loop);
       }
@@ -949,25 +1573,33 @@
         pointer.active = true;
         pointer.x = pointerToGameX(event);
         canvas.setPointerCapture(event.pointerId);
+        recordInputState();
         if (state.mode === "ready") startGame();
       });
 
       canvas.addEventListener("pointermove", (event) => {
-        if (pointer.active) pointer.x = pointerToGameX(event);
+        if (pointer.active) {
+          pointer.x = pointerToGameX(event);
+          recordInputState();
+        }
       });
 
       canvas.addEventListener("pointerup", () => {
         pointer.active = false;
+        recordInputState();
       });
 
       canvas.addEventListener("pointercancel", () => {
         pointer.active = false;
+        recordInputState();
       });
 
       function bindPad(button, direction) {
         const set = (value) => {
+          if (keys[direction] === value && !pointer.active) return;
           keys[direction] = value;
           pointer.active = false;
+          recordInputState();
           if (value && state.mode === "ready") startGame();
         };
         button.addEventListener("pointerdown", (event) => {
@@ -985,14 +1617,20 @@
 
       window.addEventListener("keydown", (event) => {
         if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
-          keys.left = true;
-          pointer.active = false;
+          if (!keys.left || pointer.active) {
+            keys.left = true;
+            pointer.active = false;
+            recordInputState();
+          }
           if (state.mode === "ready") startGame();
           event.preventDefault();
         }
         if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
-          keys.right = true;
-          pointer.active = false;
+          if (!keys.right || pointer.active) {
+            keys.right = true;
+            pointer.active = false;
+            recordInputState();
+          }
           if (state.mode === "ready") startGame();
           event.preventDefault();
         }
@@ -1003,12 +1641,31 @@
       });
 
       window.addEventListener("keyup", (event) => {
-        if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") keys.left = false;
-        if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") keys.right = false;
+        if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+          if (keys.left) {
+            keys.left = false;
+            recordInputState();
+          }
+        }
+        if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+          if (keys.right) {
+            keys.right = false;
+            recordInputState();
+          }
+        }
       });
 
       playButton.addEventListener("click", togglePlay);
       resetButton.addEventListener("click", () => resetGame());
+      loginButton.addEventListener("click", signInWithGoogle);
+      logoutButton.addEventListener("click", signOutCurrentUser);
+      displayNameInput.addEventListener("change", savePlayerProfile);
+      displayNameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          displayNameInput.blur();
+          savePlayerProfile();
+        }
+      });
       muteButton.addEventListener("click", () => {
         muted = !muted;
         updateUi();
@@ -1020,6 +1677,7 @@
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
       resetGame();
+      initFirebase();
       requestAnimationFrame((time) => {
         lastTime = time;
         requestAnimationFrame(loop);

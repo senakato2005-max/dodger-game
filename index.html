@@ -708,7 +708,7 @@
         const messages = {
           "auth/operation-not-allowed": "Firebase AuthenticationでGoogleログインが有効になっていません。",
           "auth/unauthorized-domain": "このドメインがFirebaseの承認済みドメインに入っていません。",
-          "auth/popup-blocked": "ポップアップがブロックされました。リダイレクトログインを試します。",
+          "auth/popup-blocked": "ポップアップがブロックされました。ブラウザ設定でポップアップを許可してから再試行してください。",
           "auth/popup-closed-by-user": "ログイン画面が閉じられました。もう一度ログインしてください。",
           "auth/cancelled-popup-request": "ログイン処理が重複しました。少し待ってからもう一度試してください。",
           "auth/network-request-failed": "ネットワーク接続に失敗しました。通信状態を確認してください。"
@@ -791,6 +791,13 @@
           firebaseApi = { ...appModule, ...authModule, ...firestoreModule, ...functionsModule };
           firebaseApp = firebaseApi.initializeApp(FIREBASE_CONFIG);
           auth = firebaseApi.getAuth(firebaseApp);
+          if (firebaseApi.setPersistence && firebaseApi.browserLocalPersistence) {
+            try {
+              await firebaseApi.setPersistence(auth, firebaseApi.browserLocalPersistence);
+            } catch (persistenceError) {
+              console.warn(persistenceError);
+            }
+          }
           db = firebaseApi.getFirestore(firebaseApp);
           functionsService = firebaseApi.getFunctions(firebaseApp, "asia-northeast1");
           startRunCallable = firebaseApi.httpsCallable(functionsService, "startRun");
@@ -840,39 +847,18 @@
           return;
         }
 
-        let redirectStarted = false;
         try {
           loginButton.disabled = true;
 
-          if (isMobileLike()) {
-            redirectStarted = true;
-            setAuthMessage("Googleログインページへ移動します。");
-            await firebaseApi.signInWithRedirect(auth, googleProvider);
-            return;
-          }
-
           setAuthMessage("Googleログインを開いています。");
-          await firebaseApi.signInWithPopup(auth, googleProvider);
+          const result = await firebaseApi.signInWithPopup(auth, googleProvider);
+          if (result && result.user) applyAuthUser(result.user);
         } catch (error) {
           console.error(error);
-          if (error.code === "auth/popup-blocked") {
-            try {
-              redirectStarted = true;
-              setAuthMessage("ポップアップが使えないため、Googleログインページへ移動します。");
-              await firebaseApi.signInWithRedirect(auth, googleProvider);
-              return;
-            } catch (redirectError) {
-              console.error(redirectError);
-              setAuthMessage(getAuthErrorMessage(redirectError));
-            }
-          } else {
-            setAuthMessage(getAuthErrorMessage(error));
-          }
+          setAuthMessage(getAuthErrorMessage(error));
         } finally {
-          if (!redirectStarted) {
-            loginButton.disabled = false;
-            updateUi();
-          }
+          loginButton.disabled = false;
+          updateUi();
         }
       }
 

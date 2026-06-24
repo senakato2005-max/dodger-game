@@ -978,6 +978,7 @@
           const result = await submitRunCallable({
             runId: state.runId,
             displayName: name,
+            clientScore: Math.floor(state.score),
             ticks: state.tick,
             inputLog: state.inputLog
           });
